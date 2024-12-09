@@ -1,37 +1,19 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './user.repository';
+import { CredentialUserDto } from './dto/credential-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async signUp(createUserDto: CreateUserDto): Promise<void> {
-    const { email, username, password, phone } = createUserDto;
+    await this.userRepository.signUp(createUserDto);
+  }
 
-    const user = this.userRepository.create({
-      email,
-      username,
-      password,
-      phone,
-    });
-
-    console.log(user.email);
-
-    try {
-      await this.userRepository.save(user);
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new ConflictException('Existing email');
-      } else {
-        throw new InternalServerErrorException();
-      }
-    }
+  async signIn(credentialUserDto: CredentialUserDto): Promise<void> {
+    await this.userRepository.signIn(credentialUserDto);
   }
 
   findAll() {
