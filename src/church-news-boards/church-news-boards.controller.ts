@@ -22,6 +22,11 @@ export class ChurchNewsBoardsController {
     return this.churchNewsBoardsService.create(createChurchNewsBoardDto);
   }
 
+  @Get('/list')
+  async getPostList() {
+    return await this.churchNewsBoardsService.getPostList();
+  }
+
   @Get()
   findAll() {
     return this.churchNewsBoardsService.findAll();

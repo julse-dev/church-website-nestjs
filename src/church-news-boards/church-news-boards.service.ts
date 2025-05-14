@@ -13,6 +13,10 @@ export class ChurchNewsBoardsService {
     await this.churchNewsBoardsRepository.createPost(createChurchNewsBoardDto);
   }
 
+  async getPostList() {
+    return await this.churchNewsBoardsRepository.getPostList();
+  }
+
   findAll() {
     return `This action returns all churchNewsBoards`;
   }

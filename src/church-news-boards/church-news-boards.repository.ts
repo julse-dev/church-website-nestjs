@@ -37,4 +37,17 @@ export class ChurchNewsBoardsRepository extends Repository<ChurchNewsBoard> {
       }
     }
   }
+
+  async getPostList(): Promise<Partial<ChurchNewsBoard>[]> {
+    try {
+      return this.find({
+        select: ['id', 'title', 'createdAt', 'author'],
+        order: { id: 'DESC' },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to fetch posts, error: ${error.message}`,
+      );
+    }
+  }
 }
