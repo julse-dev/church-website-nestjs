@@ -17,12 +17,8 @@ export class ChurchNewsBoardsService {
     return await this.churchNewsBoardsRepository.getPostList();
   }
 
-  findAll() {
-    return `This action returns all churchNewsBoards`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} churchNewsBoard`;
+  async getPostById(id: number) {
+    return await this.churchNewsBoardsRepository.getPostById(id);
   }
 
   update(id: number, updateChurchNewsBoardDto: UpdateChurchNewsBoardDto) {

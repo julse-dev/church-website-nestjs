@@ -38,6 +38,23 @@ export class ChurchNewsBoardsRepository extends Repository<ChurchNewsBoard> {
     }
   }
 
+  async getPostById(id: number): Promise<ChurchNewsBoard> {
+    try {
+      const post = await this.findOne({
+        where: { id: id },
+        select: ['id', 'title', 'author', 'content', 'createdAt'],
+      });
+      if (!post) {
+        throw new ConflictException('Post Not Found');
+      }
+      return post;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to fetch post, error: ${error.message}`,
+      );
+    }
+  }
+
   async getPostList(): Promise<Partial<ChurchNewsBoard>[]> {
     try {
       return this.find({

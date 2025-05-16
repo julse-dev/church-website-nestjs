@@ -27,14 +27,9 @@ export class ChurchNewsBoardsController {
     return await this.churchNewsBoardsService.getPostList();
   }
 
-  @Get()
-  findAll() {
-    return this.churchNewsBoardsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.churchNewsBoardsService.findOne(+id);
+  @Get('/list/:id')
+  async getPostById(@Param('id') id: string) {
+    return await this.churchNewsBoardsService.getPostById(+id);
   }
 
   @Patch(':id')
