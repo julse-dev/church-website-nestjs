@@ -5,7 +5,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CredentialUserDto {
+export class CredentialAuthDto {
   @IsEmail()
   readonly email: string;
 

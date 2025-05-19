@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { CredentialUserDto } from './dto/credential-user.dto';
+import { CredentialAuthDto } from '../auth/dto/credential-auth.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -40,8 +40,8 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async signIn(credentialUserDto: CredentialUserDto): Promise<string> {
-    const { email, password } = credentialUserDto;
+  async signIn(credentialAuthDto: CredentialAuthDto): Promise<string> {
+    const { email, password } = credentialAuthDto;
     const user = await this.findOneBy({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -50,11 +50,5 @@ export class UserRepository extends Repository<User> {
     } else {
       throw new UnauthorizedException('login Failed.');
     }
-
-    // 이 아래는 암호화 및 토큰화 적용 후 다시 작성.
   }
-
-  async deleteAccount(credentialUserDto: CredentialUserDto): Promise<void> {}
-
-  async updateAccount(credentialUserDto: CredentialUserDto): Promise<void> {}
 }
