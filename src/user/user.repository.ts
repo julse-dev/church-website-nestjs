@@ -9,10 +9,14 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { CredentialAuthDto } from '../auth/dto/credential-auth.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private jwtService: JwtService,
+  ) {
     super(User, dataSource.createEntityManager());
   }
 
@@ -33,7 +37,7 @@ export class UserRepository extends Repository<User> {
       await this.save(user);
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException('Existing email');
+        throw new ConflictException('이미 존재하는 이메일입니다.');
       } else {
         throw new InternalServerErrorException();
       }
@@ -45,8 +49,11 @@ export class UserRepository extends Repository<User> {
     const user = await this.findOneBy({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      const payload = { email: user.email, id: user.id };
+      const accessToken = await this.jwtService.signAsync(payload);
+
       console.log('login access');
-      return 'login access';
+      return accessToken;
     } else {
       throw new UnauthorizedException('login Failed.');
     }
