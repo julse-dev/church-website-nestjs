@@ -8,6 +8,6 @@ export class UserController {
 
   @Post('/signup')
   signUp(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-    return this.userService.signUp(createUserDto);
+    return this.userService.createUser(createUserDto);
   }
 }

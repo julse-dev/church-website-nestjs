@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ChurchNewsBoardsService } from './church-news-boards.service';
 import { ChurchNewsBoardsController } from './church-news-boards.controller';
-import { ChurchNewsBoardsRepository } from './church-news-boards.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChurchNewsBoard } from './entities/church-news-board.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([ChurchNewsBoard])],
   controllers: [ChurchNewsBoardsController],
-  providers: [ChurchNewsBoardsService, ChurchNewsBoardsRepository],
+  providers: [ChurchNewsBoardsService],
 })
 export class ChurchNewsBoardsModule {}

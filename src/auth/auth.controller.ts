@@ -9,7 +9,7 @@ export class AuthController {
 
   token: string = 'access_token';
 
-  @Post('signin')
+  @Post('/signin')
   async signIn(
     @Body(ValidationPipe) credentialAuthDto: CredentialAuthDto,
     @Res() res: Response,
@@ -26,7 +26,7 @@ export class AuthController {
     });
   }
 
-  @Post('signout')
+  @Post('/signout')
   async signOut(@Res() res: Response) {
     res.clearCookie(this.token, {
       httpOnly: true,

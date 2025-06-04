@@ -19,7 +19,7 @@ export class ChurchNewsBoardsController {
 
   @Post('/create')
   create(@Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto) {
-    return this.churchNewsBoardsService.create(createChurchNewsBoardDto);
+    return this.churchNewsBoardsService.createPost(createChurchNewsBoardDto);
   }
 
   @Get('/list')
