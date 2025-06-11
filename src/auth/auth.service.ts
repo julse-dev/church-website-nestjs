@@ -4,6 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from 'src/guard/jwt-payload';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
     const user = await this.userService.findOneBy({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload = { email: user.email, id: user.id };
+      const payload: JwtPayload = { id: user.id, username: user.username };
       const accessToken = await this.jwtService.signAsync(payload);
 
       console.log('login access');

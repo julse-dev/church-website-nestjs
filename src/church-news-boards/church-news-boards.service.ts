@@ -17,17 +17,22 @@ export class ChurchNewsBoardsService {
   ) {}
 
   async createPost(
-    createChurchNewsBoardDto: CreateChurchNewsBoardDto,
+    createChurchNewsBoardDto: CreateChurchNewsBoardDto & {
+      userId: number;
+      author: string;
+      createdAt: Date;
+    },
+    // user: any,
   ): Promise<void> {
     const { title, content, author, userId, createdAt } =
       createChurchNewsBoardDto;
 
     const churchNewsPost = this.boardRepository.create({
-      title: title,
-      content: content,
-      author: author,
-      userId: userId,
-      createdAt: createdAt,
+      title,
+      content,
+      author,
+      userId,
+      createdAt,
     });
 
     try {

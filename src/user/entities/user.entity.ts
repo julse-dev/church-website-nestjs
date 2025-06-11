@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
+import { ChurchNewsBoard } from 'src/church-news-boards/entities/church-news-board.entity';
 
 @Entity()
 @Unique(['email'])
@@ -17,4 +24,7 @@ export class User {
 
   @Column()
   phone: string;
+
+  @OneToMany(() => ChurchNewsBoard, (board) => board.author)
+  boards: ChurchNewsBoard[];
 }

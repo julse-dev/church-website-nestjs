@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ChurchNewsBoardsService } from './church-news-boards.service';
 import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
 import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
+import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+import { CurrentUser } from 'src/user/user.decorator';
 
 @Controller('church-news-boards')
 export class ChurchNewsBoardsController {
@@ -18,8 +21,19 @@ export class ChurchNewsBoardsController {
   ) {}
 
   @Post('/create')
-  create(@Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto) {
-    return this.churchNewsBoardsService.createPost(createChurchNewsBoardDto);
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto,
+    @CurrentUser() user: any,
+  ) {
+    console.log('user: ', user);
+    const postDto = {
+      ...createChurchNewsBoardDto,
+      userId: user.id,
+      author: user.username,
+      createdAt: new Date(),
+    };
+    return this.churchNewsBoardsService.createPost(postDto);
   }
 
   @Get('/list')

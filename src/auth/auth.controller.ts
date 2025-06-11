@@ -17,21 +17,22 @@ export class AuthController {
     const accessToken = await this.authService.signIn(credentialAuthDto);
     res.cookie(this.token, accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      // sameSite: 'strict',
+      sameSite: 'none', // 배포 전까지만.
       maxAge: 60 * 60 * 1000, // 1 hour
     });
-    return res.send({
-      message: 'Login successful',
-    });
+    // res.setHeader('Authorization', 'Bearer ' + accessToken);
+    return res.json(accessToken);
   }
 
   @Post('/signout')
   async signOut(@Res() res: Response) {
     res.clearCookie(this.token, {
       httpOnly: true,
-      secure: true, // https 사용 시 true
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      // sameSite: 'strict',
+      sameSite: 'none', // 배포 전까지만.
     });
 
     console.log('logout');

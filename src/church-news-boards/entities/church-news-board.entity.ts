@@ -3,7 +3,9 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class ChurchNewsBoard {
@@ -24,4 +26,7 @@ export class ChurchNewsBoard {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @ManyToOne(() => User, (user) => user.boards)
+  user: User;
 }
