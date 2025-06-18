@@ -40,7 +40,7 @@ export class UserService {
     }
   }
 
-  async findOneBy(condition: Partial<User>): Promise<User | null> {
-    return this.userRepository.findOneBy(condition);
+  async findOneBy(condition: Partial<User>): Promise<User | undefined> {
+    return await this.userRepository.findOneBy(condition);
   }
 }

@@ -13,6 +13,7 @@ import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
 import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/user/user.decorator';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('church-news-boards')
 export class ChurchNewsBoardsController {
@@ -20,11 +21,11 @@ export class ChurchNewsBoardsController {
     private readonly churchNewsBoardsService: ChurchNewsBoardsService,
   ) {}
 
-  @Post('/create')
   @UseGuards(JwtAuthGuard)
+  @Post('/create')
   async create(
     @Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
   ) {
     console.log('user: ', user);
     const postDto = {

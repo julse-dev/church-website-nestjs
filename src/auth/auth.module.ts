@@ -9,8 +9,9 @@ import { JwtStrategy } from 'src/guard/jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
+    UserModule,
     ConfigModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -21,9 +22,9 @@ import { JwtStrategy } from 'src/guard/jwt.strategy';
         },
       }),
     }),
-    UserModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
+  exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}
