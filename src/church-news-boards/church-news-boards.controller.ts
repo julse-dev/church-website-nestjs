@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ChurchNewsBoardsService } from './church-news-boards.service';
 import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
@@ -27,7 +28,6 @@ export class ChurchNewsBoardsController {
     @Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto,
     @CurrentUser() user: User,
   ) {
-    console.log('user: ', user);
     const postDto = {
       ...createChurchNewsBoardDto,
       userId: user.id,
@@ -43,20 +43,27 @@ export class ChurchNewsBoardsController {
   }
 
   @Get('/list/:id')
-  async getPostById(@Param('id') id: string) {
-    return await this.churchNewsBoardsService.getPostById(+id);
+  async getPostById(@Param('id', ParseIntPipe) id: number) {
+    return await this.churchNewsBoardsService.getPostById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateChurchNewsBoardDto: UpdateChurchNewsBoardDto,
+    @CurrentUser() user: User,
   ) {
-    return this.churchNewsBoardsService.update(+id, updateChurchNewsBoardDto);
+    return this.churchNewsBoardsService.updatePost(
+      id,
+      updateChurchNewsBoardDto,
+      user,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.churchNewsBoardsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+    return this.churchNewsBoardsService.removePost(id, user);
   }
 }

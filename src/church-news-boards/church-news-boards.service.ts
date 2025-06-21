@@ -2,12 +2,15 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
 import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
 import { Repository } from 'typeorm';
 import { ChurchNewsBoard } from './entities/church-news-board.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class ChurchNewsBoardsService {
@@ -47,40 +50,60 @@ export class ChurchNewsBoardsService {
   }
 
   async getPostList(): Promise<Partial<ChurchNewsBoard>[]> {
-    try {
-      return this.boardRepository.find({
-        select: ['id', 'title', 'createdAt', 'author'],
-        order: { id: 'DESC' },
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Failed to fetch posts, error: ${error.message}`,
-      );
-    }
+    return this.boardRepository.find({
+      select: ['id', 'title', 'createdAt', 'author'],
+      order: { id: 'DESC' },
+    });
   }
 
   async getPostById(id: number): Promise<ChurchNewsBoard> {
-    try {
-      const post = await this.boardRepository.findOne({
-        where: { id: id },
-        select: ['id', 'title', 'author', 'content', 'createdAt'],
-      });
-      if (!post) {
-        throw new ConflictException('Post Not Found');
-      }
-      return post;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Failed to fetch post, error: ${error.message}`,
+    const post = await this.boardRepository.findOne({
+      where: { id },
+      select: ['id', 'title', 'author', 'content', 'createdAt', 'userId'],
+    });
+    if (!post) {
+      throw new NotFoundException(`Post with ID "${id}" not found`);
+    }
+    return post;
+  }
+
+  async updatePost(
+    id: number,
+    updateChurchNewsBoardDto: UpdateChurchNewsBoardDto,
+    user: User,
+  ): Promise<ChurchNewsBoard> {
+    const post = await this.getPostById(id);
+
+    if (post.userId !== user.id) {
+      throw new UnauthorizedException(
+        'You do not have permission to edit this post.',
       );
     }
+
+    const updatedPost = this.boardRepository.merge(
+      post,
+      updateChurchNewsBoardDto,
+    );
+    await this.boardRepository.save(updatedPost);
+    return updatedPost;
   }
 
-  update(id: number, updateChurchNewsBoardDto: UpdateChurchNewsBoardDto) {
-    return `This action updates a #${id} churchNewsBoard`;
-  }
+  async removePost(id: number, user: User): Promise<void> {
+    const post = await this.getPostById(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} churchNewsBoard`;
+    if (post.userId !== user.id) {
+      throw new UnauthorizedException(
+        'You do not have permission to delete this post.',
+      );
+    }
+
+    const result = await this.boardRepository.delete(id);
+
+    if (result.affected === 0) {
+      // This case should not be reached if getPostById is successful, but as a safeguard:
+      throw new NotFoundException(
+        `Post with ID "${id}" not found during deletion.`,
+      );
+    }
   }
 }

@@ -22,7 +22,6 @@ export class AuthService {
       const payload: JwtPayload = { id: user.id, username: user.username };
       const accessToken = await this.jwtService.signAsync(payload);
 
-      console.log('login access');
       return { accessToken };
     } else {
       throw new UnauthorizedException('login Failed.');
