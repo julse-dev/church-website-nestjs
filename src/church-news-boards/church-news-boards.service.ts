@@ -10,7 +10,8 @@ import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
 import { Repository } from 'typeorm';
 import { ChurchNewsBoard } from './entities/church-news-board.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+// import { User } from 'src/user/entities/user.entity';
+import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
 @Injectable()
 export class ChurchNewsBoardsService {
@@ -70,7 +71,7 @@ export class ChurchNewsBoardsService {
   async updatePost(
     id: number,
     updateChurchNewsBoardDto: UpdateChurchNewsBoardDto,
-    user: User,
+    user: UserProfileDto,
   ): Promise<ChurchNewsBoard> {
     const post = await this.getPostById(id);
 
@@ -88,7 +89,7 @@ export class ChurchNewsBoardsService {
     return updatedPost;
   }
 
-  async removePost(id: number, user: User): Promise<void> {
+  async removePost(id: number, user: UserProfileDto): Promise<void> {
     const post = await this.getPostById(id);
 
     if (post.userId !== user.id) {

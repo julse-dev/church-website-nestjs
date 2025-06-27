@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChurchNewsBoardsModule } from './church-news-boards/church-news-boards.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtStrategy } from './guard/jwt.strategy';
 
 @Module({
   imports: [
@@ -31,6 +30,6 @@ import { JwtStrategy } from './guard/jwt.strategy';
     AuthModule,
   ],
   controllers: [],
-  providers: [JwtStrategy],
+  providers: [],
 })
 export class AppModule {}

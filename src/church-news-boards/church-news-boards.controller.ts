@@ -14,7 +14,8 @@ import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
 import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/user/user.decorator';
-import { User } from 'src/user/entities/user.entity';
+// import { User } from 'src/user/entities/user.entity';
+import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
 @Controller('church-news-boards')
 export class ChurchNewsBoardsController {
@@ -26,7 +27,7 @@ export class ChurchNewsBoardsController {
   @Post('/create')
   async create(
     @Body() createChurchNewsBoardDto: CreateChurchNewsBoardDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserProfileDto,
   ) {
     const postDto = {
       ...createChurchNewsBoardDto,
@@ -52,7 +53,7 @@ export class ChurchNewsBoardsController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateChurchNewsBoardDto: UpdateChurchNewsBoardDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserProfileDto,
   ) {
     return this.churchNewsBoardsService.updatePost(
       id,
@@ -63,7 +64,10 @@ export class ChurchNewsBoardsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: UserProfileDto,
+  ) {
     return this.churchNewsBoardsService.removePost(id, user);
   }
 }

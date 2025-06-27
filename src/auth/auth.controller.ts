@@ -1,14 +1,20 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   ValidationPipe,
+  UseGuards,
   Res,
   Logger,
+  Req,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { CredentialAuthDto } from './dto/credential-auth.dto';
+import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
+// import { User } from 'src/user/entities/user.entity';
+import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
 const ACCESS_TOKEN_COOKIE_NAME: string = 'access_token';
 
@@ -45,5 +51,12 @@ export class AuthController {
     logger.log('로그아웃 되었습니다.');
 
     return res.status(200).json({ message: '로그아웃 되었습니다.' });
+  }
+
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req: Request): UserProfileDto {
+    // JwtAuthGuard가 req.user에 사용자 정보를 주입합니다.
+    return req.user as UserProfileDto;
   }
 }
