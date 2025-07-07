@@ -25,6 +25,9 @@ export class User {
   @Column()
   phone: string;
 
+  @Column({ nullable: true })
+  hashedRefreshToken: string | null;
+
   @OneToMany(() => ChurchNewsBoard, (board) => board.author)
   boards: ChurchNewsBoard[];
 }

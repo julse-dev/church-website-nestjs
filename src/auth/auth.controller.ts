@@ -13,10 +13,10 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { CredentialAuthDto } from './dto/credential-auth.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
-// import { User } from 'src/user/entities/user.entity';
 import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
 const ACCESS_TOKEN_COOKIE_NAME: string = 'access_token';
+const REFRESH_TOKEN_COOKIE_NAME: string = 'refresh_token';
 
 @Controller('auth')
 export class AuthController {
@@ -27,8 +27,32 @@ export class AuthController {
     @Body(ValidationPipe) credentialAuthDto: CredentialAuthDto,
     @Res() res: Response,
   ) {
-    const { accessToken } =
+    const { accessToken, refreshToken } =
       await this.authService.validateUser(credentialAuthDto);
+
+    res.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.json({ accessToken });
+  }
+
+  @Post('/refresh')
+  async refresh(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+    const { accessToken } =
+      await this.authService.refreshAccessToken(refreshToken);
+
     res.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -40,15 +64,24 @@ export class AuthController {
   }
 
   @Post('/signout')
-  async signOut(@Res() res: Response) {
+  async signOut(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+    await this.authService.removeRefreshToken(refreshToken);
+
     res.clearCookie(ACCESS_TOKEN_COOKIE_NAME, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
 
-    const logger = new Logger(AuthController.name);
-    logger.log('로그아웃 되었습니다.');
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    // const logger = new Logger(AuthController.name);
+    // logger.log('로그아웃 되었습니다.');
 
     return res.status(200).json({ message: '로그아웃 되었습니다.' });
   }
@@ -56,7 +89,6 @@ export class AuthController {
   @Get('/me')
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req: Request): UserProfileDto {
-    // JwtAuthGuard가 req.user에 사용자 정보를 주입합니다.
     return req.user as UserProfileDto;
   }
 }

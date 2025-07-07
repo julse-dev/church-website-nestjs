@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,14 @@ export class UserService {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  async updateUser(
+    id: number,
+    updateUserDto: Partial<UpdateUserDto>,
+  ): Promise<void> {
+    const { hashedRefreshToken } = updateUserDto;
+    await this.userRepository.update(id, { hashedRefreshToken });
   }
 
   async findOneBy(condition: Partial<User>): Promise<User | undefined> {
