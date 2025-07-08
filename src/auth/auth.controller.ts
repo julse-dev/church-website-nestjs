@@ -6,7 +6,6 @@ import {
   ValidationPipe,
   UseGuards,
   Res,
-  Logger,
   Req,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
@@ -25,7 +24,7 @@ export class AuthController {
   @Post('/signin')
   async signIn(
     @Body(ValidationPipe) credentialAuthDto: CredentialAuthDto,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response, // 버그 수정: passthrough 옵션 추가
   ) {
     const { accessToken, refreshToken } =
       await this.authService.validateUser(credentialAuthDto);
@@ -44,11 +43,15 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    return res.json({ accessToken });
+    return { accessToken }; // 버그 수정: res.json 대신 객체 반환
   }
 
   @Post('/refresh')
-  async refresh(@Req() req: Request, @Res() res: Response) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // 버그 수정: passthrough 옵션 추가
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
     const { accessToken } =
       await this.authService.refreshAccessToken(refreshToken);
@@ -60,11 +63,15 @@ export class AuthController {
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    return res.json({ accessToken });
+    return { accessToken }; // 버그 수정: res.json 대신 객체 반환
   }
 
   @Post('/signout')
-  async signOut(@Req() req: Request, @Res() res: Response) {
+  async signOut(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // 버그 수정: passthrough 옵션 추가
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
     await this.authService.removeRefreshToken(refreshToken);
 
@@ -80,10 +87,7 @@ export class AuthController {
       sameSite: 'strict',
     });
 
-    // const logger = new Logger(AuthController.name);
-    // logger.log('로그아웃 되었습니다.');
-
-    return res.status(200).json({ message: '로그아웃 되었습니다.' });
+    return { message: '로그아웃 되었습니다.' }; // 버그 수정: res.status().json 대신 객체 반환
   }
 
   @Get('/me')
