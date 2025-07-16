@@ -8,13 +8,13 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ChurchNewsBoardsService } from './church-news-boards.service';
 import { CreateChurchNewsBoardDto } from './dto/create-church-news-board.dto';
 import { UpdateChurchNewsBoardDto } from './dto/update-church-news-board.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/user/user.decorator';
-// import { User } from 'src/user/entities/user.entity';
 import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
 @Controller('church-news-boards')
@@ -39,8 +39,14 @@ export class ChurchNewsBoardsController {
   }
 
   @Get('/list')
-  async getPostList() {
-    return await this.churchNewsBoardsService.getPostList();
+  async getPostList(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return await this.churchNewsBoardsService.getPostList(
+      Number(page),
+      Number(limit),
+    );
   }
 
   @Get('/list/:id')

@@ -50,11 +50,14 @@ export class ChurchNewsBoardsService {
     }
   }
 
-  async getPostList(): Promise<Partial<ChurchNewsBoard>[]> {
-    return this.boardRepository.find({
+  async getPostList(page = 1, limit = 10) {
+    const [posts, totalCount] = await this.boardRepository.findAndCount({
       select: ['id', 'title', 'createdAt', 'author'],
       order: { id: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return { posts, totalCount };
   }
 
   async getPostById(id: number): Promise<ChurchNewsBoard> {
