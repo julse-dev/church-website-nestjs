@@ -45,11 +45,33 @@ export class UserService {
     id: number,
     updateUserDto: Partial<UpdateUserDto>,
   ): Promise<void> {
-    const { hashedRefreshToken } = updateUserDto;
+    const { username, password, phone } = updateUserDto;
+    const updateData: Partial<User> = {};
+    if (username) updateData.username = username;
+    if (phone) updateData.phone = phone;
+    if (password) {
+      const salt = await bcrypt.genSalt();
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+    await this.userRepository.update(id, updateData);
+  }
+
+  async updateRefreshToken(
+    id: number,
+    hashedRefreshToken: string,
+  ): Promise<void> {
     await this.userRepository.update(id, { hashedRefreshToken });
   }
 
   async findOneBy(condition: Partial<User>): Promise<User | undefined> {
     return await this.userRepository.findOneBy(condition);
+  }
+
+  async findById(id: number): Promise<User | undefined> {
+    return await this.userRepository.findOne({ where: { id } });
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await this.userRepository.delete(id);
   }
 }

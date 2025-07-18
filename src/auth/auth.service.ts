@@ -29,7 +29,7 @@ export class AuthService {
       });
 
       const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-      await this.userService.updateUser(user.id, { hashedRefreshToken });
+      await this.userService.updateRefreshToken(user.id, hashedRefreshToken);
 
       return { accessToken, refreshToken };
     } else {
@@ -62,6 +62,7 @@ export class AuthService {
       );
 
       return { accessToken: newAccessToken };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token.');
     }
@@ -72,9 +73,7 @@ export class AuthService {
       const payload: JwtPayload = this.jwtService.verify(refreshToken);
       const user = await this.userService.findOneBy({ id: payload.id });
       if (user) {
-        await this.userService.updateUser(user.id, {
-          hashedRefreshToken: null,
-        });
+        await this.userService.updateRefreshToken(user.id, null);
       }
     } catch {
       // 무시
