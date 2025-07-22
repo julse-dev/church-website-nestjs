@@ -8,6 +8,7 @@ import {
   Res,
   Req,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -15,6 +16,7 @@ import { CredentialAuthDto } from './dto/credential-auth.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private readonly ACCESS_TOKEN_COOKIE_NAME: string;
@@ -35,6 +37,10 @@ export class AuthController {
   }
 
   @Post('/signin')
+  @ApiOperation({ summary: '로그인' })
+  @ApiResponse({ status: 201, description: '로그인 성공' })
+  @ApiResponse({ status: 401, description: '로그인 실패' })
+  @ApiBody({ type: CredentialAuthDto })
   async signIn(
     @Body(ValidationPipe) credentialAuthDto: CredentialAuthDto,
     @Res({ passthrough: true }) res: Response,
@@ -60,6 +66,9 @@ export class AuthController {
   }
 
   @Post('/refresh')
+  @ApiOperation({ summary: '액세스 토큰 재발급' })
+  @ApiResponse({ status: 201, description: '토큰 재발급 성공' })
+  @ApiResponse({ status: 401, description: '리프레시 토큰 오류' })
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -79,6 +88,8 @@ export class AuthController {
   }
 
   @Post('/signout')
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiResponse({ status: 200, description: '로그아웃 성공' })
   async signOut(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -102,6 +113,8 @@ export class AuthController {
   }
 
   @Get('/me')
+  @ApiOperation({ summary: '내 정보 조회(토큰 기반)' })
+  @ApiResponse({ status: 200, description: '내 정보 반환' })
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req: Request): UserProfileDto {
     return req.user as UserProfileDto;
