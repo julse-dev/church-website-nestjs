@@ -28,6 +28,6 @@ export class User {
   @Column({ nullable: true })
   hashedRefreshToken: string | null;
 
-  @OneToMany(() => ChurchNewsBoard, (board) => board.author)
+  @OneToMany(() => ChurchNewsBoard, (board) => board.user)
   boards: ChurchNewsBoard[];
 }

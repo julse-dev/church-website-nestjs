@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
@@ -28,5 +29,6 @@ export class ChurchNewsBoard {
   createdAt: Date;
 
   @ManyToOne(() => User, (user) => user.boards)
+  @JoinColumn({ name: 'userId' })
   user: User;
 }

@@ -2,6 +2,8 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -9,13 +11,16 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async createUser(createUserDto: CreateUserDto): Promise<void> {
     const { email, username, password, phone } = createUserDto;
@@ -73,5 +78,84 @@ export class UserService {
 
   async deleteUser(id: number): Promise<void> {
     await this.userRepository.delete(id);
+  }
+
+  // 마이페이지 기능 메서드들
+  async getMyProfile(userId: number): Promise<Omit<User, 'password' | 'hashedRefreshToken'>> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['boards'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    const { password, hashedRefreshToken, ...userProfile } = user;
+    return userProfile;
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void> {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 현재 비밀번호 확인
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    // 새 비밀번호 해싱
+    const salt = await bcrypt.genSalt();
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    await this.userRepository.update(userId, { password: hashedNewPassword });
+  }
+
+  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    const updateData: Partial<User> = {};
+    if (updateProfileDto.username) updateData.username = updateProfileDto.username;
+    if (updateProfileDto.phone) updateData.phone = updateProfileDto.phone;
+
+    await this.userRepository.update(userId, updateData);
+  }
+
+  async getMyPosts(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['boards'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    return user.boards;
+  }
+
+  async deleteAccount(userId: number, deleteAccountDto: DeleteAccountDto): Promise<void> {
+    const { currentPassword } = deleteAccountDto;
+
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 현재 비밀번호 확인
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('비밀번호가 올바르지 않습니다.');
+    }
+
+    await this.userRepository.delete(userId);
   }
 }

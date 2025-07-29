@@ -1,13 +1,27 @@
-import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  ValidationPipe,
+  Get,
+  Put,
+  Delete,
+  UseGuards
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../guard/jwt-auth.guard';
+import { CurrentUser } from './user.decorator';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('/signup')
   @ApiOperation({ summary: '회원가입' })
@@ -57,5 +71,73 @@ export class UserController {
   async deleteAccount(@Body('userId') userId: number) {
     await this.userService.deleteUser(userId);
     return { message: '회원탈퇴가 완료되었습니다.' };
+  }
+
+  // 마이페이지 기능 엔드포인트들
+  @UseGuards(JwtAuthGuard)
+  @Get('/mypage')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '마이페이지 - 내 정보 조회' })
+  @ApiResponse({ status: 200, description: '사용자 정보 반환 (비밀번호 제외)' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  async getMyPage(@CurrentUser() user: any) {
+    return await this.userService.getMyProfile(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/mypage/password')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '마이페이지 - 비밀번호 변경' })
+  @ApiResponse({ status: 200, description: '비밀번호 변경 완료' })
+  @ApiResponse({ status: 400, description: '현재 비밀번호가 올바르지 않음' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @ApiBody({ type: ChangePasswordDto })
+  async changePassword(
+    @CurrentUser() user: any,
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.userService.changePassword(user.id, changePasswordDto);
+    return { message: '비밀번호가 성공적으로 변경되었습니다.' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/mypage/profile')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '마이페이지 - 프로필 수정 (이름, 전화번호)' })
+  @ApiResponse({ status: 200, description: '프로필 수정 완료' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @ApiBody({ type: UpdateProfileDto })
+  async updateMyProfile(
+    @CurrentUser() user: any,
+    @Body(ValidationPipe) updateProfileDto: UpdateProfileDto,
+  ) {
+    await this.userService.updateProfile(user.id, updateProfileDto);
+    return { message: '프로필이 성공적으로 수정되었습니다.' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/mypage/posts')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '마이페이지 - 내가 작성한 게시글 조회' })
+  @ApiResponse({ status: 200, description: '사용자가 작성한 게시글 목록 반환' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  async getMyPosts(@CurrentUser() user: any) {
+    return await this.userService.getMyPosts(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/mypage/account')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '마이페이지 - 회원 탈퇴' })
+  @ApiResponse({ status: 200, description: '회원 탈퇴 완료' })
+  @ApiResponse({ status: 400, description: '비밀번호가 올바르지 않음' })
+  @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+  @ApiBody({ type: DeleteAccountDto })
+  async deleteMyAccount(
+    @CurrentUser() user: any,
+    @Body(ValidationPipe) deleteAccountDto: DeleteAccountDto,
+  ) {
+    await this.userService.deleteAccount(user.id, deleteAccountDto);
+    return { message: '회원 탈퇴가 완료되었습니다.' };
   }
 }
