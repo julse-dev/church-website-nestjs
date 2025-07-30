@@ -17,7 +17,14 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "docs:init": "./scripts/docs.sh init",
+    "docs:new": "./scripts/docs.sh new",
+    "docs:update": "./scripts/docs.sh update",
+    "docs:validate": "./scripts/docs.sh validate",
+    "docs:toc": "./scripts/docs.sh toc",
+    "docs:build": "./scripts/docs.sh build",
+    "docs:serve": "./scripts/docs.sh serve"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.5",

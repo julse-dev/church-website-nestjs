@@ -43,6 +43,11 @@ lerna-debug.log*
 .env.local
 .env.development
 
+# Documentation build files
+docs/site/
+docs/.vuepress/dist/
+*.md.bak
+
 # temp directory
 .temp
 .tmp
