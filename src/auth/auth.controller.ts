@@ -10,57 +10,40 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { CredentialAuthDto } from './dto/credential-auth.dto';
 import { JwtAuthGuard } from 'src/guard/jwt-auth.guard';
 import { UserProfileDto } from 'src/user/dto/user-profile.dto';
+import { Throttle } from '@nestjs/throttler';
+import { CurrentUser } from 'src/user/user.decorator';
+import { AuthenticatedRequest, CookieResponse } from './types/auth-types';
+import { CookieService } from './services/cookie.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  private readonly ACCESS_TOKEN_COOKIE_NAME: string;
-  private readonly REFRESH_TOKEN_COOKIE_NAME: string;
-
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {
-    this.ACCESS_TOKEN_COOKIE_NAME = this.configService.get<string>(
-      'ACCESS_TOKEN_COOKIE_NAME',
-      'access_token',
-    );
-    this.REFRESH_TOKEN_COOKIE_NAME = this.configService.get<string>(
-      'REFRESH_TOKEN_COOKIE_NAME',
-      'refresh_token',
-    );
-  }
+    private readonly cookieService: CookieService,
+  ) { }
 
   @Post('/signin')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 1분에 5번만 로그인 시도 허용
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 201, description: '로그인 성공' })
   @ApiResponse({ status: 401, description: '로그인 실패' })
+  @ApiResponse({ status: 429, description: '너무 많은 로그인 시도' })
   @ApiBody({ type: CredentialAuthDto })
   async signIn(
     @Body(ValidationPipe) credentialAuthDto: CredentialAuthDto,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: CookieResponse,
   ) {
     const { accessToken, refreshToken } =
       await this.authService.validateUser(credentialAuthDto);
 
-    res.cookie(this.ACCESS_TOKEN_COOKIE_NAME, accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
-
-    res.cookie(this.REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    this.cookieService.setAccessTokenCookie(res, accessToken);
+    this.cookieService.setRefreshTokenCookie(res, refreshToken);
 
     return { accessToken };
   }
@@ -70,19 +53,14 @@ export class AuthController {
   @ApiResponse({ status: 201, description: '토큰 재발급 성공' })
   @ApiResponse({ status: 401, description: '리프레시 토큰 오류' })
   async refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: CookieResponse,
   ) {
-    const refreshToken = req.cookies[this.REFRESH_TOKEN_COOKIE_NAME];
+    const refreshToken = this.cookieService.getRefreshTokenFromRequest(req);
     const { accessToken } =
       await this.authService.refreshAccessToken(refreshToken);
 
-    res.cookie(this.ACCESS_TOKEN_COOKIE_NAME, accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
+    this.cookieService.setAccessTokenCookie(res, accessToken);
 
     return { accessToken };
   }
@@ -91,23 +69,13 @@ export class AuthController {
   @ApiOperation({ summary: '로그아웃' })
   @ApiResponse({ status: 200, description: '로그아웃 성공' })
   async signOut(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: CookieResponse,
   ) {
-    const refreshToken = req.cookies[this.REFRESH_TOKEN_COOKIE_NAME];
+    const refreshToken = this.cookieService.getRefreshTokenFromRequest(req);
     await this.authService.removeRefreshToken(refreshToken);
 
-    res.clearCookie(this.ACCESS_TOKEN_COOKIE_NAME, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
-
-    res.clearCookie(this.REFRESH_TOKEN_COOKIE_NAME, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
+    this.cookieService.clearAuthCookies(res);
 
     return { message: '로그아웃 되었습니다.' };
   }
@@ -116,7 +84,7 @@ export class AuthController {
   @ApiOperation({ summary: '내 정보 조회(토큰 기반)' })
   @ApiResponse({ status: 200, description: '내 정보 반환' })
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req: Request): UserProfileDto {
-    return req.user as UserProfileDto;
+  getProfile(@CurrentUser() user: UserProfileDto): UserProfileDto {
+    return user;
   }
 }

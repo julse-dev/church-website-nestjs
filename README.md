@@ -10,13 +10,27 @@ Node: 최신 LTS
 Nest.js: 최신 LTS  
 PostgreSQL: 최신 LTS
 
-### 2. Install
+### 2. Environment Setup
+
+먼저 환경 변수 파일을 설정하세요:
+
+```zsh
+cp .env.development.example .env.development
+```
+
+`.env.development` 파일을 열어서 실제 값들로 설정하세요:
+
+- `JWT_SECRET`: 강력한 JWT 비밀키 (최소 32자)
+- 데이터베이스 연결 정보
+- 기타 환경별 설정
+
+### 3. Install
 
 ```zsh
 npm install
 ```
 
-### 3. Run
+### 4. Run
 
 ```zsh
 npm run start:dev

@@ -1,9 +1,16 @@
-import { UserProfileDto } from 'src/user/dto/user-profile.dto';
+import { UserProfileDto } from '../../user/dto/user-profile.dto';
 
 declare global {
   namespace Express {
-    export interface Request {
+    interface Request {
       user?: UserProfileDto;
+    }
+
+    interface Response {
+      cookie(name: string, val: string, options?: any): this;
+      clearCookie(name: string, options?: any): this;
     }
   }
 }
+
+export { };
