@@ -7,7 +7,8 @@ import {
   Put,
   Delete,
   UseGuards,
-  Patch
+  Patch,
+  Res
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,13 +19,13 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../guard/jwt-auth.guard';
 import { CurrentUser } from './user.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { Response } from 'express';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  // ✅ 공개 엔드포인트: 회원가입
   @Post('/signup')
   @ApiOperation({ summary: '회원가입' })
   @ApiResponse({ status: 201, description: '회원가입 성공' })
@@ -33,8 +34,6 @@ export class UserController {
   signUp(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
-
-  // ✅ 인증된 사용자 전용 엔드포인트들 (기존 /mypage → /me로 통합)
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')
@@ -91,7 +90,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Delete('/me')
-  @Throttle({ default: { limit: 10, ttl: 3600000 } }) // 1시간에 2번만 회원 탈퇴 시도 허용
+  @Throttle({ default: { limit: 2, ttl: 3600000 } }) // 1시간에 2번만 회원 탈퇴 시도 허용
   @ApiOperation({ summary: '회원 탈퇴' })
   @ApiResponse({ status: 200, description: '회원 탈퇴 완료' })
   @ApiResponse({ status: 400, description: '비밀번호가 올바르지 않음' })
@@ -102,8 +101,13 @@ export class UserController {
   async deleteMyAccount(
     @CurrentUser() user: any,
     @Body(ValidationPipe) deleteAccountDto: DeleteAccountDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
     await this.userService.deleteAccount(user.id, deleteAccountDto);
+
+    res.clearCookie('access_token', { httpOnly: true, path: '/' });
+    res.clearCookie('refresh_token', { httpOnly: true, path: '/' });
+
     return { message: '회원 탈퇴가 완료되었습니다.' };
   }
 }
