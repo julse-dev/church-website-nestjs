@@ -13,7 +13,7 @@ export class ChurchNewsBoard {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   userId: number;
 
   @Column()
@@ -28,7 +28,10 @@ export class ChurchNewsBoard {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.boards)
+  @ManyToOne(() => User, (user) => user.boards, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'userId' })
   user: User;
 }
