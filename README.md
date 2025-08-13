@@ -1,136 +1,56 @@
-# Church Website in Nest.js
+# Church Website Backend
 
-본 프로젝트는 교회 웹사이트 백엔드를 구현하는 프로젝트입니다.
+교회 웹사이트 백엔드 API 서버 (NestJS + PostgreSQL)
 
-## Project Setup
+## 🚀 빠른 시작
 
-### 1. Spec
-
-Node: 최신 LTS  
-Nest.js: 최신 LTS  
-PostgreSQL: 최신 LTS
-
-### 2. Environment Setup
-
-먼저 환경 변수 파일을 설정하세요:
-
-```zsh
-cp .env.development.example .env.development
-```
-
-`.env.development` 파일을 열어서 실제 값들로 설정하세요:
-
-- `JWT_SECRET`: 강력한 JWT 비밀키 (최소 32자)
-- 데이터베이스 연결 정보
-- 기타 환경별 설정
-
-### 3. Install
-
-```zsh
+```bash
+# 의존성 설치
 npm install
-```
 
-### 4. Run
+# 환경 변수 설정
+cp .env.development.example .env.development
 
-```zsh
+# 개발 서버 실행
 npm run start:dev
 ```
 
-## API Endpoints
+## 📚 문서
 
-### Authentication
+- [개발 가이드](docs/development-guide.md) - 상세한 개발 환경 설정
+- [API 문서](http://localhost:3000/api-docs) - Swagger 문서 (서버 실행 후)
+
+## 🔗 주요 API 엔드포인트
+
+### 인증
 
 - `POST /api/auth/signin` - 로그인
 - `POST /api/auth/refresh` - 토큰 갱신
 - `POST /api/auth/signout` - 로그아웃
-- `GET /api/auth/me` - 현재 사용자 정보
 
-### User Management
+### 사용자
 
 - `POST /api/user/signup` - 회원가입
-- `POST /api/user/me` - 내 정보 조회 (구버전)
-- `POST /api/user/me/update` - 내 정보 수정 (구버전)
-- `POST /api/user/me/delete` - 회원 탈퇴 (구버전)
+- `GET /api/user/me` - 내 정보 조회
+- `PATCH /api/user/me/profile` - 프로필 수정
+- `DELETE /api/user/me` - 회원 탈퇴
 
-### MyPage (마이페이지)
+### 게시판
 
-- `GET /api/user/mypage` - 마이페이지 정보 조회 (이름, 이메일, 전화번호)
-- `PUT /api/user/mypage/password` - 비밀번호 변경
-- `PUT /api/user/mypage/profile` - 프로필 수정 (이름, 전화번호)
-- `GET /api/user/mypage/posts` - 내가 작성한 게시글 조회
-- `DELETE /api/user/mypage/account` - 회원 탈퇴
-
-### Church News Boards
-
-- `POST /api/church-news-boards/create` - 게시글 생성
-- `GET /api/church-news-boards/list` - 게시글 목록 조회
-- `GET /api/church-news-boards/list/:id` - 특정 게시글 조회
+- `GET /api/church-news-boards/list` - 게시글 목록
+- `POST /api/church-news-boards/create` - 게시글 작성
+- `GET /api/church-news-boards/list/:id` - 게시글 상세
 - `PATCH /api/church-news-boards/:id` - 게시글 수정
 - `DELETE /api/church-news-boards/:id` - 게시글 삭제
 
-## 마이페이지 기능
+## 🛠 기술 스택
 
-### 1. 사용자 정보 조회
+- **Backend**: NestJS, TypeScript
+- **Database**: PostgreSQL
+- **Authentication**: JWT (HTTP-only cookies)
+- **Documentation**: Swagger/OpenAPI
+- **Validation**: class-validator, class-transformer
 
-- **엔드포인트**: `GET /api/user/mypage`
-- **인증**: JWT 토큰 필요
-- **응답**: 사용자명, 이메일, 전화번호 (비밀번호 제외)
+## 📄 라이센스
 
-### 2. 사용자 정보 수정
-
-#### 2.1 비밀번호 변경
-
-- **엔드포인트**: `PUT /api/user/mypage/password`
-- **인증**: JWT 토큰 필요
-- **요청 본문**:
-
-  ```json
-  {
-    "currentPassword": "현재_비밀번호",
-    "newPassword": "새_비밀번호"
-  }
-  ```
-
-- **비밀번호 요구사항**: 최소 8자, 대소문자, 숫자, 특수문자 포함
-
-#### 2.2 프로필 수정
-
-- **엔드포인트**: `PUT /api/user/mypage/profile`
-- **인증**: JWT 토큰 필요
-- **요청 본문**:
-
-  ```json
-  {
-    "username": "새_사용자명",
-    "phone": "010-0000-0000"
-  }
-  ```
-
-- **참고**: 이메일은 수정할 수 없습니다.
-
-### 3. 사용자 게시글 조회
-
-- **엔드포인트**: `GET /api/user/mypage/posts`
-- **인증**: JWT 토큰 필요
-- **응답**: 사용자가 작성한 모든 게시글 목록
-
-### 4. 회원 탈퇴
-
-- **엔드포인트**: `DELETE /api/user/mypage/account`
-- **인증**: JWT 토큰 필요
-- **요청 본문**:
-
-  ```json
-  {
-    "currentPassword": "현재_비밀번호"
-  }
-  ```
-
-- **참고**: 비밀번호 확인을 통해 탈퇴 의사를 재확인합니다.
-
-## 보안 고려사항
-
-- 모든 마이페이지 엔드포인트는 JWT 인증이 필요합니다.
-- 비밀번호 변경 및 회원 탈퇴 시 현재 비밀번호를 확인합니다.
-- 비밀번호는 bcrypt로 해싱되어 저장됩니다.
-- 응답에서 비밀번호와 같은 민감한 정보는 제외됩니다.
+이 프로젝트는 MIT 라이센스 하에 있습니다.
