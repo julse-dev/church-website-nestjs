@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { COOKIE_OPTIONS, TOKEN_EXPIRATION } from '../constants/cookie.constants';
 
 export interface CookieOptions {
     httpOnly?: boolean;
@@ -29,19 +30,15 @@ export class CookieService {
 
     setAccessTokenCookie(response: any, token: string): void {
         response.cookie(this.ACCESS_TOKEN_COOKIE_NAME, token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 60 * 60 * 1000, // 1 hour
+            ...COOKIE_OPTIONS,
+            maxAge: TOKEN_EXPIRATION.ACCESS_TOKEN,
         });
     }
 
     setRefreshTokenCookie(response: any, token: string): void {
         response.cookie(this.REFRESH_TOKEN_COOKIE_NAME, token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            ...COOKIE_OPTIONS,
+            maxAge: TOKEN_EXPIRATION.REFRESH_TOKEN,
         });
     }
 

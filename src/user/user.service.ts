@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { DeleteAccountDto } from './dto/delete-account.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UserService {
@@ -81,7 +82,7 @@ export class UserService {
   }
 
   // 마이페이지 기능 메서드들
-  async getMyProfile(userId: number): Promise<Omit<User, 'password' | 'hashedRefreshToken'>> {
+  async getMyProfile(userId: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['boards'],
@@ -91,8 +92,7 @@ export class UserService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    const { password, hashedRefreshToken, ...userProfile } = user;
-    return userProfile;
+    return new UserResponseDto(user);
   }
 
   async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void> {

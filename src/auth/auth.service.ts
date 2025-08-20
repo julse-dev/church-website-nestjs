@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(
     credentialAuthDto: CredentialAuthDto,
@@ -62,8 +62,7 @@ export class AuthService {
       );
 
       return { accessToken: newAccessToken };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid refresh token.');
     }
   }
