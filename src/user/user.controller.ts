@@ -27,8 +27,12 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Post('/signup')
-  @ApiOperation({ summary: '회원가입' })
+  @ApiOperation({
+    summary: '회원가입',
+    description: '이메일, 사용자 이름, 비밀번호, 전화번호를 입력받아 회원가입을 진행합니다.'
+  })
   @ApiResponse({ status: 201, description: '회원가입 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 입력 값' })
   @ApiResponse({ status: 409, description: '이미 존재하는 이메일' })
   @ApiBody({ type: CreateUserDto })
   signUp(@Body(ValidationPipe) createUserDto: CreateUserDto) {

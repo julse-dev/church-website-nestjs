@@ -1,56 +1,71 @@
 # Church Website Backend
 
-교회 웹사이트 백엔드 API 서버 (NestJS + PostgreSQL)
+    이 프로젝트는 교회 웹사이트를 위한 백엔드 시스템으로, 사용자 관리, 소식 게시판, JWT 기반 인증 기능을 제공합니다.
 
-## 🚀 빠른 시작
+## 🚀 Starting Project
 
-```bash
-# 의존성 설치
-npm install
+### 📋 Prerequisites & Tech Stack
 
-# 환경 변수 설정
-cp .env.development.example .env.development
+이 프로젝트는 아래 기술들을 사용하여 개발되었습니다. 프로젝트를 실행하기 위해 필요한 환경이 구축되었는지 확인해 주세요.
 
-# 개발 서버 실행
-npm run start:dev
-```
+- Node.js: v18.0.0 이상
 
-## 📚 문서
+- PostgreSQL: v13.0 이상
 
-- [개발 가이드](docs/development-guide.md) - 상세한 개발 환경 설정
-- [API 문서](http://localhost:3000/api-docs) - Swagger 문서 (서버 실행 후)
+- Git: 최신 버전
 
-## 🔗 주요 API 엔드포인트
+- 백엔드: NestJS, TypeScript
 
-### 인증
+- 인증: JWT (HTTP-only cookies)
 
-- `POST /api/auth/signin` - 로그인
-- `POST /api/auth/refresh` - 토큰 갱신
-- `POST /api/auth/signout` - 로그아웃
+- 문서화: Swagger/OpenAPI
 
-### 사용자
+- 유효성 검사: class-validator, class-transformer
 
-- `POST /api/user/signup` - 회원가입
-- `GET /api/user/me` - 내 정보 조회
-- `PATCH /api/user/me/profile` - 프로필 수정
-- `DELETE /api/user/me` - 회원 탈퇴
+### ⚙️ Setup
 
-### 게시판
+1. **프로젝트 클론 및 의존성 설치**
 
-- `GET /api/church-news-boards/list` - 게시글 목록
-- `POST /api/church-news-boards/create` - 게시글 작성
-- `GET /api/church-news-boards/list/:id` - 게시글 상세
-- `PATCH /api/church-news-boards/:id` - 게시글 수정
-- `DELETE /api/church-news-boards/:id` - 게시글 삭제
+   ```bash
+   git clone https://github.com/julse-dev/church-website-nestjs.git
+   cd church-website-nestjs
+   npm install
+   ```
 
-## 🛠 기술 스택
+2. **환경 변수 설정**
 
-- **Backend**: NestJS, TypeScript
-- **Database**: PostgreSQL
-- **Authentication**: JWT (HTTP-only cookies)
-- **Documentation**: Swagger/OpenAPI
-- **Validation**: class-validator, class-transformer
+   ```bash
+   cp .env.development.example .env.development
+   ```
 
-## 📄 라이센스
+   필수 환경 변수:
+   - `NODE_ENV`: 개발 환경 설정 (development/production)
+   - `DB_TYPE`: 데이터베이스 타입 (postgres)
+   - `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`: 데이터베이스 연결 정보
+   - `JWT_SECRET`: JWT 토큰 암호화 키
+   - `JWT_EXPIRES_IN`: 토큰 만료 시간
+   - `PORT`: 서버 포트 (기본값: 3001)
 
-이 프로젝트는 MIT 라이센스 하에 있습니다.
+3. **서버 실행**
+
+   ```bash
+   npm run start:dev
+   ```
+
+## 📚 API Docs
+
+Swagger UI를 통해 API 문서와 테스트 기능을 제공합니다.
+
+- **접근 URL**: `http://localhost:3001/api-docs`
+- **Base URL**: `/api`
+
+주요 기능
+
+- 사용자 인증 (회원가입/로그인)
+- 사용자 프로필 관리
+- 교회 소식 게시판 CRUD
+- JWT 기반 인증 (HTTP-only 쿠키)
+
+## 📄 LICENCE
+
+    MIT License.

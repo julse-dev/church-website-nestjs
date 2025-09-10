@@ -30,7 +30,7 @@ import { UserProfileDto } from 'src/user/dto/user-profile.dto';
 export class ChurchNewsBoardsController {
   constructor(
     private readonly churchNewsBoardsService: ChurchNewsBoardsService,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Post('/create')
@@ -52,19 +52,41 @@ export class ChurchNewsBoardsController {
   }
 
   @Get('/list')
-  @ApiOperation({ summary: '게시글 목록 조회' })
-  @ApiResponse({ status: 200, description: '게시글 목록 반환' })
+  @ApiOperation({
+    summary: '게시글 목록 조회',
+    description: '페이지네이션이 적용된 게시글 목록을 조회합니다. 기본값: page=1, limit=10'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '게시글 목록 반환',
+    schema: {
+      properties: {
+        posts: {
+          type: 'array',
+          items: {
+            properties: {
+              id: { type: 'number' },
+              title: { type: 'string' },
+              author: { type: 'string' },
+              createdAt: { type: 'string', format: 'date-time' }
+            }
+          }
+        },
+        totalCount: { type: 'number' }
+      }
+    }
+  })
   @ApiQuery({
     name: 'page',
     required: false,
     type: String,
-    description: '페이지 번호',
+    description: '페이지 번호 (기본값: 1)',
   })
   @ApiQuery({
     name: 'limit',
     required: false,
     type: String,
-    description: '페이지 당 개수',
+    description: '페이지 당 게시글 수 (기본값: 10)',
   })
   async getPostList(
     @Query('page') page: string = '1',
@@ -77,9 +99,26 @@ export class ChurchNewsBoardsController {
   }
 
   @Get('/list/:id')
-  @ApiOperation({ summary: '게시글 상세 조회' })
-  @ApiResponse({ status: 200, description: '게시글 반환' })
-  @ApiParam({ name: 'id', type: Number, description: '게시글 ID' })
+  @ApiOperation({
+    summary: '게시글 상세 조회',
+    description: '특정 게시글의 상세 내용을 조회합니다.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '게시글 상세 정보 반환',
+    schema: {
+      properties: {
+        id: { type: 'number' },
+        title: { type: 'string' },
+        content: { type: 'string' },
+        author: { type: 'string' },
+        createdAt: { type: 'string', format: 'date-time' },
+        userId: { type: 'number' }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: '게시글을 찾을 수 없음' })
+  @ApiParam({ name: 'id', type: Number, description: '조회할 게시글의 ID' })
   async getPostById(@Param('id', ParseIntPipe) id: number) {
     return await this.churchNewsBoardsService.getPostById(id);
   }
